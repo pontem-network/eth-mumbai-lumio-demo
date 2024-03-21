@@ -1,0 +1,27 @@
+evm_rpc := "https://testnet.lumio.io/l2_rpc"
+evm_private_key := "$(cat $(git rev-parse --show-toplevel)/.evm)"
+
+
+evm-deploy:
+  cd evm && forge create \
+    --rpc-url "{{evm_rpc}}" \
+    --private-key "{{evm_private_key}}" \
+    src/Storage.sol:StorageContract
+
+evm-get CONTRACT:
+  cast storage --rpc-url "{{evm_rpc}}" "{{CONTRACT}}" 0
+
+move-compile:
+  cd move && aptos move compile --named-addresses call_evm=default
+
+move-test: move-compile
+  cd move && aptos move test --named-addresses call_evm=default
+
+move-deploy: move-test
+  cd move && aptos move publish --named-addresses call_evm=default
+
+move-set EVM_ADDR N:
+  aptos move run \
+    --function-id 'default::call_evm::set_stored_data' \
+    --args "u256:{{N}}" \
+    --args "hex:{{EVM_ADDR}}"

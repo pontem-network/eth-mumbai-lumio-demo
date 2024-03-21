@@ -1,0 +1,11 @@
+[package]
+name = "Storage"
+version = "0.0.0"
+
+[addresses]
+storage = "_"
+
+[dependencies.AptosFramework]
+git = "https://github.com/pontem-network/lumio-framework"
+rev = "main"
+subdir = "aptos-framework"

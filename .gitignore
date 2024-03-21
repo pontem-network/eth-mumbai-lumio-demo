@@ -1,0 +1,5 @@
+.aptos
+/.demo/
+/.evm
+/.pre-commit-config.yaml
+/Justfile

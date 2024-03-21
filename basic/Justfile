@@ -1,0 +1,33 @@
+evm_rpc := "https://testnet.lumio.io/l2_rpc"
+evm_private_key := "$(cat $(git rev-parse --show-toplevel)/.evm)"
+
+
+evm-deploy:
+  cd evm && forge create \
+    --rpc-url "{{evm_rpc}}" \
+    --private-key "{{evm_private_key}}" \
+    src/Counter.sol:Counter
+
+evm-increment CONTRACT:
+  cast send "{{CONTRACT}}" --rpc-url "{{evm_rpc}}" --private-key "{{evm_private_key}}" "increment()"
+
+evm-get CONTRACT:
+  cast storage --rpc-url "{{evm_rpc}}" "{{CONTRACT}}" 0
+
+move-compile:
+  cd move && aptos move compile --named-addresses hello_blockchain=default
+
+move-test: move-compile
+  cd move && aptos move test --named-addresses hello_blockchain=default
+
+move-deploy: move-test
+  cd move && aptos move publish --named-addresses hello_blockchain=default
+
+move-set MSG:
+  aptos move run \
+    --function-id 'default::message::set_message' \
+    --args "string:{{MSG}}"
+
+
+move-get:
+  aptos account list | jq '.Result[-1]'

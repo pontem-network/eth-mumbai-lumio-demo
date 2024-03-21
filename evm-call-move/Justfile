@@ -1,0 +1,26 @@
+evm_rpc := "https://testnet.lumio.io/l2_rpc"
+evm_private_key := "$(cat $(git rev-parse --show-toplevel)/.evm)"
+move_api_adapter := "https://mvm.testnet.lumio.io/v1"
+
+
+evm-deploy MOVE_MODULE:
+  cd evm && forge create \
+    --rpc-url "{{evm_rpc}}" \
+    --private-key "{{evm_private_key}}" \
+    src/AptosStorage.sol:AptosStorage \
+    --constructor-args "{{MOVE_MODULE}}"
+
+evm-set CONTRACT NUM:
+  cast send "{{CONTRACT}}" --rpc-url "{{evm_rpc}}" --private-key "{{evm_private_key}}" "set_u64(uint64)" "{{NUM}}"
+
+move-compile:
+  cd move && aptos move compile --named-addresses storage=default
+
+move-test: move-compile
+  cd move && aptos move test --named-addresses storage=default
+
+move-deploy: move-test
+  cd move && aptos move publish --named-addresses storage=default
+
+move-get ACC:
+  curl "{{move_api_adapter}}/accounts/000000000000000000000000{{ACC}}/resources" | jq 
